@@ -1,13 +1,19 @@
 //package com.masterly.core.config;
 //
 //import lombok.extern.slf4j.Slf4j;
+//import org.flywaydb.core.Flyway;
 //import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
+//import org.springframework.context.annotation.DependsOn;
 //import org.springframework.context.annotation.Profile;
-//import jakarta.annotation.PostConstruct;
+//import org.springframework.jdbc.core.JdbcTemplate;
+//import org.springframework.jdbc.datasource.DriverManagerDataSource;
 //
+//import javax.sql.DataSource;
 //import java.sql.Connection;
 //import java.sql.DriverManager;
+//import java.sql.ResultSet;
 //import java.sql.Statement;
 //
 //@Slf4j
@@ -33,23 +39,14 @@
 //    @Value("${database.admin.password:postgres}")
 //    private String adminPassword;
 //
-//    @PostConstruct
-//    public void initDatabase() {
-//        log.info("🔄 Проверяем существование базы данных...");
-//        createDatabaseIfNotExists();
-//        log.info("✅ База данных готова к миграциям");
-//    }
-//
-//    private void createDatabaseIfNotExists() {
+//    @Bean(name="createDatabaseIfNotExists")
+//    public void createDatabaseIfNotExists() {
 //        String dbName = extractDatabaseName(appUrl);
 //
 //        try (Connection conn = DriverManager.getConnection(adminUrl, adminUser, adminPassword);
 //             Statement stmt = conn.createStatement()) {
 //
-//            // Проверяем существование БД
-//            var rs = stmt.executeQuery(
-//                    "SELECT 1 FROM pg_database WHERE datname = '" + dbName + "'"
-//            );
+//            ResultSet rs = stmt.executeQuery("SELECT 1 FROM pg_database WHERE datname = '" + dbName + "'");
 //
 //            if (!rs.next()) {
 //                log.info("📦 База данных '{}' не найдена. Создаём...", dbName);
@@ -74,6 +71,46 @@
 //        } catch (Exception e) {
 //            log.error("❌ Ошибка при создании БД: {}", e.getMessage());
 //        }
+//    }
+//
+//    @Bean
+//    @DependsOn("createDatabaseIfNotExists")
+//    @Profile("spring-jdbc | native") // Активируется только при профиле 'spring-jdbc' или 'native'
+//    public DataSource dataSource() {
+//        DriverManagerDataSource ds = new DriverManagerDataSource();
+//        ds.setDriverClassName("org.postgresql.Driver");
+//        ds.setUrl(appUrl);
+//        ds.setUsername(appUser);
+//        ds.setPassword(appPassword);
+//        return ds;
+//    }
+//
+//    @Bean
+//    @DependsOn("createDatabaseIfNotExists")
+//    public Flyway flyway() {
+//        Flyway flyway = Flyway.configure()
+//                .baselineOnMigrate(true)
+//                // .baselineVersion("V1")
+//                // .dataSource("jdbc:postgresql://localhost:5430/postgres", "postgres", "postgres")
+//                .dataSource(dataSource())
+//                .locations("classpath:db/migration/flyway")
+//                .baselineOnMigrate(true)
+//                .validateOnMigrate(false)
+//                .load();
+//        // Запуск миграций
+//        flyway.migrate();
+//        return flyway;
+//    }
+//
+//    @Bean
+//    @Profile("spring-jdbc") // Активируется только при профиле 'spring-jdbc'
+//    public JdbcTemplate jdbcTemplate(
+//            DataSource dataSource,
+//            @Value("${spring.jdbc.fetchSize}") Integer fetchSize
+//    ) {
+//        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+//        jdbcTemplate.setFetchSize(fetchSize);
+//        return jdbcTemplate;
 //    }
 //
 //    private String extractDatabaseName(String url) {
