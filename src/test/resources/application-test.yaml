@@ -1,0 +1,14 @@
+spring:
+  flyway:
+    enabled: true
+    locations:
+      - classpath:db/migration
+    baseline-on-migrate: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+jwt:
+  secret: my-very-secure-jwt-secret-key-that-is-at-least-32-bytes-long-1234567890
+  expiration: 86400000
