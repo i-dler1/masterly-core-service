@@ -1,5 +1,6 @@
 package com.masterly.core.service;
 
+import com.masterly.core.entity.Master;
 import com.masterly.core.repository.MasterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +27,29 @@ public class MasterDetailsService implements UserDetailsService {
      * @return UserDetails с данными пользователя
      * @throws UsernameNotFoundException если пользователь не найден
      */
+//    @Override
+//    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+//        log.debug("Loading user by email: {}", email);
+//
+//        return masterRepository.findByEmail(email)
+//                .orElseThrow(() -> {
+//                    log.warn("User not found with email: {}", email);
+//                    return new UsernameNotFoundException("Master not found with email: " + email);
+//                });
+//    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.debug("Loading user by email: {}", email);
 
-        return masterRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("User not found with email: {}", email);
-                    return new UsernameNotFoundException("Master not found with email: " + email);
-                });
+        Master master = masterRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Master not found with email: " + email));
+
+        log.info("Found master: {}, password hash: {}", master.getEmail(), master.getPasswordHash());
+        log.info("Password hash length: {}, starts with $2a$: {}",
+                master.getPasswordHash().length(),
+                master.getPasswordHash().startsWith("$2a$"));
+
+        return master;
     }
 }

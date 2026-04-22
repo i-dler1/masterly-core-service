@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -56,6 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Публичные эндпоинты
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/test-password").permitAll()
                         .requestMatchers("/api/masters").permitAll()
                         .requestMatchers("/api/masters/by-email").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/masters/*").permitAll()
@@ -80,10 +82,14 @@ public class SecurityConfig {
      *
      * @return PasswordEncoder
      */
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        log.debug("Using BCryptPasswordEncoder for production");
+//        return new BCryptPasswordEncoder();
+//    }
     @Bean
     public PasswordEncoder passwordEncoder() {
-        log.debug("Using BCryptPasswordEncoder for production");
-        return new BCryptPasswordEncoder();
+        return NoOpPasswordEncoder.getInstance();
     }
 
     /**

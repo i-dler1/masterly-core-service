@@ -50,6 +50,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+
         </dependency>
 
         <dependency>
@@ -140,6 +141,20 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>10.17.1</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/masterly_db</url>
+                    <user>masterly_user</user>
+                    <password>masterly_password</password>
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
+                </configuration>
             </plugin>
         </plugins>
     </build>
